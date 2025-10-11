@@ -1,3 +1,14 @@
+# N+1 기본 개념 
+
+@ManyToOne 관계에서 LAZY 지연로딩시 N+1 예시 : 회원(N) - 크루(1) 관계시 
+: 조회후 관계된 엔터티를 조회시 N 번 더 조회되는 현상.
+
+<img width="851" height="545" alt="image" src="https://github.com/user-attachments/assets/8c6d50b7-655d-4894-bc3f-fab6d73e73de" />
+기본 해결 - fetch join
+<img width="1186" height="479" alt="image" src="https://github.com/user-attachments/assets/3fd1714e-533b-4b7d-97ba-07bc949acb7b" />
+
+
+
 # Spring Data Envers + RevisionRepository 테스트 README
 
 ## 프로젝트 개요
