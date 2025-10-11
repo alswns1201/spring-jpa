@@ -4,10 +4,11 @@
 : 조회후 관계된 엔터티를 조회시 N 번 더 조회되는 현상.
 
 <img width="851" height="545" alt="image" src="https://github.com/user-attachments/assets/8c6d50b7-655d-4894-bc3f-fab6d73e73de" />
-기본 해결 - fetch join
+
 <img width="1186" height="479" alt="image" src="https://github.com/user-attachments/assets/3fd1714e-533b-4b7d-97ba-07bc949acb7b" />
-
-
+. 기본 해결 - fetch join  @OneToMany Fetch Join과 LIMIT/OFFSET (페이징)을 함께 사용할 경우, 데이터베이스 레벨에서 정확한 페이징을 수행할 수 없다고 판단하여 메모리에서 페이징을 처리하려고 시도합니다. 이는 대량의 데이터 조회 시 성능 문제를 야기합니다.
+- @BatchSize를 활용한 N+1 쿼리 수 최적화
+- Quertdsl 을 활용한 쿼리 적용.
 
 # Spring Data Envers + RevisionRepository 테스트 README
 
