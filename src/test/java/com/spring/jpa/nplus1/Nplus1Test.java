@@ -100,4 +100,31 @@ class Nplus1Test {
         // - `memberRepository.findAllWithCrewFetchJoin()`: 1번 (SELECT m.*, c.* FROM member m JOIN crew c ON m.crew_id = c.id)
         // 총 1번의 쿼리가 발생하게 됩니다.
     }
+
+    @Test
+    void QueryDslFetchJoin_해결예시() {
+        System.out.println("### Fetch Join 예시 전  ###");
+
+
+
+        List<Crew> crews = crewRepository.findAllCrewsWithMembersByQuerydsl();
+        for (Crew crew : crews){
+            System.out.println("회원 수: " + crew.getMembers().size());
+        }
+        System.out.println("### Fetch Join 예시 ###");
+
+
+        List<Crew> fetchJoinCrews = crewRepository.findAllCrewsWithMembersByQuerydslFetchJoin();
+        for (Crew crew : fetchJoinCrews){
+            System.out.println("회원 수: " + crew.getMembers().size());
+        }
+
+        System.out.println("### Fetch Join 예시 끝 ###");
+
+
+
+        // 예상되는 쿼리 수:
+        // - `memberRepository.findAllWithCrewFetchJoin()`: 1번 (SELECT m.*, c.* FROM member m JOIN crew c ON m.crew_id = c.id)
+        // 총 1번의 쿼리가 발생하게 됩니다.
+    }
 }

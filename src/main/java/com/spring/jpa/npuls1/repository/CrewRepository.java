@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface CrewRepository extends JpaRepository<Crew,String> {
+public interface CrewRepository extends JpaRepository<Crew,String>,CrewRepositoryCustom {
 
     // Fetch Join을 사용하여 Crew와 Member를 함께 조회
     // distinct 키워드를 사용하여 Crew 엔티티 중복을 제거합니다.

@@ -35,6 +35,14 @@ dependencies {
 	implementation 'com.mysql:mysql-connector-j:8.1.0'// 버전 추가
 
 	implementation 'org.springframework.data:spring-data-envers:3.1.2'
+
+	// QueryDSL JPA
+	implementation "com.querydsl:querydsl-jpa:5.0.0:jakarta" // 버전은 프로젝트에 맞게 조정
+	annotationProcessor(
+			"jakarta.persistence:jakarta.persistence-api",
+			"jakarta.activation:jakarta.activation-api",
+			"com.querydsl:querydsl-apt:5.0.0:jakarta"
+	)
 }
 
 tasks.named('test') {
