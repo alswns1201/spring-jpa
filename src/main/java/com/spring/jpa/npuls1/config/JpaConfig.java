@@ -1,4 +1,4 @@
-package com.spring.jpa.config;
+package com.spring.jpa.npuls1.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
