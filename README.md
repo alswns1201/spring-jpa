@@ -22,7 +22,14 @@
 | Qclass   | querydsl-jpa:5.0.0:jakarta|
 
 ## Stream 관련
+테스트를 위한 stocks Entity와 약 4만개 임시 데이터 준비 
+<img width="376" height="195" alt="image" src="https://github.com/user-attachments/assets/9b18fbf2-0da0-40b4-a211-e86d5b236bd2" />
+| Method	| Endpoint | 	설명 |
+| :------- | :----------| :------ |
+| GET	   | /stocks	| 4만개 데이터 조회 |
+| GET	| /stocks/stream	| 4만개 데이터 STREAM 조회 |
 
+- /stokcs로 조회를 하면 데이터가 모두 나올때 까지 기다리게 된다. 반면, stream(`StreamingResponseBody`) 으로 조회를 하면 전부 완료 되지 않아도 실시간으로 변환된 값들을 실시간으로 화면에 제공된다.
 
 
 ## 🧩 Envers 테스트
