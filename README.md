@@ -1,72 +1,72 @@
-# N+1 기본 개념 
+### 🧭 개요
 
-@ManyToOne 관계에서 LAZY 지연로딩시 N+1 예시 : 회원(N) - 크루(1) 관계시 
-: 조회후 관계된 엔터티를 조회시 N 번 더 조회되는 현상.
+이 프로젝트는 Spring Boot 3.5.6 + JPA + MySQL (Docker) 환경에서 엔티티 이력 관리, N+1 문제 실험, Stream 활용을 학습하기 위한 스터디 프로젝트입니다.
 
-<img width="851" height="545" alt="image" src="https://github.com/user-attachments/assets/8c6d50b7-655d-4894-bc3f-fab6d73e73de" />
+현재 주요 테스트 대상:
 
-<img width="1186" height="479" alt="image" src="https://github.com/user-attachments/assets/3fd1714e-533b-4b7d-97ba-07bc949acb7b" />
-. 기본 해결 - fetch join  @OneToMany Fetch Join과 LIMIT/OFFSET (페이징)을 함께 사용할 경우, 데이터베이스 레벨에서 정확한 페이징을 수행할 수 없다고 판단하여 메모리에서 페이징을 처리하려고 시도합니다. 이는 대량의 데이터 조회 시 성능 문제를 야기합니다.
-- @BatchSize를 활용한 N+1 쿼리 수 최적화
-- Quertdsl 을 활용한 쿼리 적용.
+*   Java Stream API
+*   Hibernate Envers
+*   N+1 문제 분석 및 해결
 
-# Spring Data Envers + RevisionRepository 테스트 README
 
-## 프로젝트 개요
-이 프로젝트는 Spring Boot 3 + JPA + MySQL 환경에서 **Hibernate Envers**를 사용하여 `Book` 엔티티의 변경 이력을 관리하고, `RevisionRepository`를 통해 최신/과거 Revision을 조회하는 예제입니다.  
+### ⚙️ 기술 스택
 
-- **Entity**: `Book` (`id`, `name`, `pages`)  
-- **Controller**: `SpringDataEnversApplication`  
-- **Repository**: `BookRepository` (extends `JpaRepository` + `RevisionRepository`)  
+| 구성요소 | 기술              |
+| :------- | :---------------- |
+| Language | Java 17           |
+| Framework| Spring Boot 3.5.6 |
+| ORM      | Spring Data JPA   |
+| Audit    | Hibernate Envers  |
+| DB       | MySQL (Docker)    |
+| Build    | Gradle            |
+| Qclass   | querydsl-jpa:5.0.0:jakarta|
 
-## 1. 엔티티 설정
+## Stream 관련
 
-```java
-@Entity
-@Audited
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Book {
-    @Id
-    @GeneratedValue
-    private int id;
-    private String name;
-    private int pages;
-}
+
+
+## 🧩 Envers 테스트
+- 경로 패키지 /envers
+- RevisionRepository를 상속하면 Book의 변경 이력을 손쉽게 조회 가능
+### 🧪 API 시나리오
+| Method	| Endpoint | 	설명 |
+| :------- | :----------| :------ |
+| POST	   | /saveBook	| 새로운 Book 저장 |
+|PUT	| /update/{id}/{pages}	| Book의 페이지 수 수정 |
+|DELETE	| /delete/{id}	| Book 삭제 |
+|GET	| /getInfo/{id}	| 해당 Book의 최근 Revision 조회 |
 ```
-@Audited → 엔티티 변경 시 자동으로 _AUD 테이블 생성 및 이력 저장
-
-## Repository 예제
+Hibernate: select ba1_0.rev,ba1_0.id,ba1_0.revtype,ba1_0.name,ba1_0.pages,dre1_0.rev,dre1_0.revtstmp from book_aud ba1_0 join revinfo r2_0 on r2_0.rev=ba1_0.rev,revinfo dre1_0 where ba1_0.id=? and ba1_0.rev=dre1_0.rev order by r2_0.revtstmp desc limit ?
+Optional[Revision 3 of entity Book(id=1, name=Spring in Action, pages=400) - Revision metadata DefaultRevisionMetadata{entity=DefaultRevisionEntity(id = 3, revisionDate = Oct 8, 2025, 2:53:20 PM), revisionType=UPDATE}]
 ```
-public interface BookRepository extends JpaRepository<Book, Integer>, RevisionRepository<Book, Integer, Integer> {
-}
-```
-RevisionRepository를 상속하면 엔티티 변경 이력 조회 가능
+<img width="589" height="238" alt="image" src="https://github.com/user-attachments/assets/b134a36b-86d0-4c5b-a2c0-10ca31e02af3" />
 
 
-## REST API 테스트
+## 🧩 N+1 문제 테스트 
 
-revisionNumber → 변경 번호
-revisionType → MOD (수정), ADD (생성), DEL (삭제)
-entity → 해당 Revision 시점의 엔티티 상태
+### 📄 엔티티 설정
+- `Crew`와 `Member`는 `@OneToMany`, `@ManyToOne` 관계로 연결되어 있으며, 기본적으로 `fetch = FetchType.LAZY` (지연 로딩)으로 설정되어 있습니다.
+### 🗂 Repository 설정
+- N+1 문제 해결을 위한 Fetch Join 쿼리 메서드와 Querydsl 기반의 커스텀 Repository를 포함합니다.
+### 테스트 코드에서 성능 확인 - 지연 로딩(FetchType.LAZY) 설정된 연관 관계에서 N+1 문제가 발생하는 시나리오를 보여줍니다.
+### 시나리오 1 (Member -> Crew):
+- memberRepository.findAll() 호출 시 1번의 쿼리가 발생하고, 이후 각 Member의 Crew 정보(member.getCrew().getName())에 접근할 때마다 N개의 추가 쿼리가 발생합니다. (총 1 + N 쿼리)
+`예상 쿼리 수: 1 (findAll) + 15 (Member 수) = 16번 쿼리`
+### 시나리오 2 (Crew -> Members):
+- crewRepository.findAll() 호출 시 1번의 쿼리가 발생하고, 이후 각 Crew의 Member 목록(crew.getMembers().size())에 접근할 때마다 N개의 추가 쿼리가 발생합니다. (총 1 + N 쿼리)
+`예상 쿼리 수: 1 (findAll) + 3 (Crew 수) = 4번 쿼리`
 
-## 4. 테스트 시나리오
+### 2. fetchJoin_해결예시() - @Query 어노테이션과 JOIN FETCH를 사용하여 N+1 문제를 해결하는 방법을 보여줍니다.
+### 시나리오 1 (Member -> Crew):
+- memberRepository.findAllWithCrewFetchJoin() 호출 시 1번의 쿼리만으로 모든 Member와 그에 해당하는 Crew 정보를 함께 가져옵니다.
+  `예상 쿼리 수: 1번 쿼리`
+### 시나리오 2 (Crew -> Members):
+- crewRepository.findAllWithMembersFetchJoin() 호출 시 1번의 쿼리만으로 모든 Crew와 그에 해당하는 Member 목록을 함께 가져옵니다.
+`예상 쿼리 수: 1번 쿼리`
+- 주의: @OneToMany 관계에서 Fetch Join 사용 시 데이터 중복이 발생할 수 있으므로, Set 컬렉션 사용 또는 JPQL의 DISTINCT 키워드 활용을 고려해야 합니다.
+### 3. queryDslFetchJoin_해결예시() - Querydsl을 활용하여 N+1 문제가 발생하는 경우와 fetchJoin() 메서드를 사용하여 이를 해결하는 방법을 비교합니다.
+- Querydsl 일반 조회 (N+1 발생 가능): crewRepository.findAllCrewsWithMembersByQuerydsl() 호출 시 1번의 쿼리가 발생하고, 이후 각 Crew의 Member 목록(crew.getMembers().size())에 접근할 때마다 N개의 추가 쿼리가 발생합니다.
+`예상 쿼리 수: 1 (Querydsl 조회) + 3 (Crew 수) = 4번 쿼리`
+- Querydsl Fetch Join 해결: crewRepository.findAllCrewsWithMembersByQuerydslFetchJoin() 호출 시 fetchJoin()을 통해 1번의 쿼리로 Crew와 연관된 Member 목록까지 함께 가져옵니다.
+`예상 쿼리 수: 1번 쿼리`
 
-/saveBook로 책 생성
-
-/update/{id}/{pages}로 페이지 수 수정
-
-/delete/{id}로 책 삭제
-
-/getInfo/{id}로 최근 Revision 조회
-
-DB 확인: BOOK_AUD 테이블에서 모든 Revision 확인 가능
-
-## 5. 참고
-
-MySQL JDBC URL에 allowPublicKeyRetrieval=true 필요 (MySQL 8.x 이상)
-
-spring.datasource.url=jdbc:mysql://localhost:3306/mydb?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-
-ddl-auto=update 사용 시 개발용에만 적합, 운영에서는 Flyway/Liquibase 권장
