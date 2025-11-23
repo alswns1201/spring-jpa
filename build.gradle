@@ -46,6 +46,13 @@ dependencies {
 
 	//
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+	//kafka 실습
+	implementation 'org.springframework.kafka:spring-kafka'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+
+
 }
 
 tasks.named('test') {
