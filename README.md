@@ -1,12 +1,13 @@
 ### 🧭 개요
 
-이 프로젝트는 Spring Boot 3.5.6 + JPA + MySQL (Docker) 환경에서 엔티티 이력 관리, N+1 문제 실험, Stream 활용을 학습하기 위한 스터디 프로젝트입니다.
+이 프로젝트는 Spring Boot 3.5.6 + JPA + MySQL (Docker) 환경에서 엔티티 이력 관리, N+1 문제 실험, Stream 활용 kafka 학습하기 위한 스터디 프로젝트입니다.
 
 현재 주요 테스트 대상:
 
 *   Java Stream API
 *   Hibernate Envers
 *   N+1 문제 분석 및 해결
+*   AWS EC2 프리티어로 kafka를 구성하여 producer 실습 해보기 ( 컨슈머는 별도로 구현 예정)
 
 
 ### ⚙️ 기술 스택
@@ -20,6 +21,26 @@
 | DB       | MySQL (Docker)    |
 | Build    | Gradle            |
 | Qclass   | querydsl-jpa:5.0.0:jakarta|
+
+
+
+## Kafka Producer 이메일 발송 실습
+
+이 프로젝트는 **Spring Boot + Kafka** 기반으로, 이메일 발송 요청 메시지를 Kafka 토픽에 전송하는 간단한 Producer 실습 예제입니다.
+
+### 📌 환경 설정
+
+### application.properties
+```properties
+spring.kafka.bootstrap-servers=AWS_PUBLIC_IP:9092
+spring.kafka.producer.key-serializer=org.apache.kafka.common.serialization.StringSerializer
+spring.kafka.producer.value-serializer=org.apache.kafka.common.serialization.StringSerializer
+```
+* SendEmailRequestDto → 컨트롤러에서 전달받는 이메일 요청 DTO
+* EmailSendMessage → Kafka로 전송할 메시지 구조
+* EmailService.sendEmail() → KafkaTemplate 을 이용해 메시지를 특정 토픽(email.send)으로 전송  - JSON 직렬화 후 문자열 형태로 Kafka에 발행
+* AWS EC2(프리티어) 우분투 환경에서 topic 생성 후 생성된 메시지 확인.
+
 
 ## Stream 관련
 테스트를 위한 stocks Entity와 약 4만개 임시 데이터 준비 
